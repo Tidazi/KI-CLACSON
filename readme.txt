@@ -11,6 +11,13 @@ the order of the settings is as follows:
 02. amount of delay (in frames)
 03. empty (trailing comma is important!)
 
+there is not currently support for fullscreen ki yet, sorry.
+
+the resolution must match the windowed resolution of killer instinct
+as of the time of this writing, only two resolutions are supported:
+1920x1080 (default in this release)
+1600x900
+
 
 the amount of delay is related to performance, the longer the delay,
 the better the performance will be, at the expense of being
