@@ -1,5 +1,7 @@
 ;clacson.ahk
 ;an accessibility utility by tidazi (2020)
+;version: 0001
+;it's a pre-alpha proof of concept!
 ;
 ;so long as the resulting script is open source and offered for free,
 ; anyone may use this script for anything they want
