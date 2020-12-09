@@ -1,6 +1,6 @@
 ;clacson.ahk
 ;an accessibility utility by tidazi (2020)
-;version: 0001
+;version: 0002
 ;it's a pre-alpha proof of concept!
 ;
 ;so long as the resulting script is open source and offered for free,
@@ -14,29 +14,6 @@
 
 ;are we in debug mode?
 clacsonDebugMode = 0
-
-;get coords from mouse relative to window if in debug mode
-if(clacsonDebugMode)
-{
-  SetTimer, WatchCursor, 50
-  DetectHiddenWindows, On ; for special win
-  CoordMode, Mouse, Screen
-}
-
-;display cursor position in tooltip
-WatchCursor()
-{
-  MouseGetPos, Xm, Ym, id, control
-  WinGetTitle, title, ahk_id %id%
-  WinGetClass, class, ahk_id %id%
-  WinGetPos, Xw, Yw,,, %title%
-  Xr := Xm - Xw
-  Yr := Ym - Yw
-  Xs := Xm - Xws
-  Ys := Ym - Yws
-  ToolTip, Relative: %Xr%/%Yr%
-  ;Mouse: %Xm%/%Ym%`n
-}
 
 
 ;create config object
@@ -105,31 +82,80 @@ clacson_DelayMS := (clacson_Delay*16)
 
 ;debug window for tidazi (may need this for volume controls)
 Gui, clacson_DebugMain:New,, KI CLACSON
-Gui, clacson_DebugMain:Add, Text,, Config File
-Gui, clacson_DebugMain:Add, Edit, Disabled r3 vTextbox1 w230
-Gui, clacson_DebugMain:Add, Text,, Debug Feed
-Gui, clacson_DebugMain:Add, Edit, Disabled r3 vTextbox2 w230
-Gui, clacson_DebugMain:Add, Text,, Debug Feed2
-Gui, clacson_DebugMain:Add, Edit, Disabled r4 vTextbox3 w230
-;Gui, clacson_DebugMain:Add, Text,, Resolution Coords File
-;Gui, clacson_DebugMain:Add, Edit, Disabled r10 vTextbox4 w230
+Gui, clacson_DebugMain:Font,, Fixedsys
+Gui, clacson_DebugMain:Add, Text,, Configuration
+Gui, clacson_DebugMain:Add, Edit, Disabled r2 vConfigBox w230
+Gui, clacson_DebugMain:Add, Text,, Current State
+Gui, clacson_DebugMain:Add, Edit, Disabled r2 vStateBox w230
 
-GuiControl,, Textbox4, %clacson_ResCoordsDebug%
+if(clacsonDebugMode)
+{
+  Gui, clacson_DebugMain:Add, Text,, Debug Feed2
+  Gui, clacson_DebugMain:Add, Edit, Disabled r4 vTextbox3 w230
+}
+
+;get coords from mouse relative to window if in debug mode
+if(clacsonDebugMode)
+{
+  SetTimer, WatchCursor, 50
+  DetectHiddenWindows, On ; for special win
+  CoordMode, Mouse, Screen
+}
+
+
+;display cursor position in tooltip
+WatchCursor()
+{
+  MouseGetPos, Xm, Ym, id, control
+  WinGetTitle, title, ahk_id %id%
+  WinGetClass, class, ahk_id %id%
+  WinGetPos, Xw, Yw,,, %title%
+  Xr := Xm - Xw
+  Yr := Ym - Yw
+  Xs := Xm - Xws
+  Ys := Ym - Yws
+  CoordMode, Tooltip, Screen
+  ToolTip, Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%, -10, 0
+
+  ;Mouse: %Xm%/%Ym%`n
+  ;GuiControl,, CoordsBox, Relative: %Xr%/%Yr%
+}
+
+;tina is lazy and has goldfish brain, get coords to clipboard before i forget
+CursorToClip()
+{
+  MouseGetPos, Xm, Ym, id, control
+  WinGetTitle, title, ahk_id %id%
+  WinGetClass, class, ahk_id %id%
+  WinGetPos, Xw, Yw,,, %title%
+  Xr := Xm - Xw
+  Yr := Ym - Yw
+  Xs := Xm - Xws
+  Ys := Ym - Yws
+  CoordMode, Tooltip, Screen
+  clipboard = Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%
+}
+
 
 WinGetPos,,,kiwinW,kiwinH,Killer Instinct
 ResolutionText = % "" . kiwinW-16 . "x" . kiwinH-41
 
 ;config display for debug
-textboxConfigDisplay = % "Resolution: " . clacsonActiveResolution . "`n" . "Frame Delay: " . clacson_Delay . "`n"
+textboxConfigDisplay = % "Resolution: " . clacsonActiveResolution . "`n" . "FrameDelay: " . clacson_Delay . "`n"
 ; . "MS Delay: " . clacson_DelayMS
 
-GuiControl,, Textbox1, % textboxConfigDisplay
+GuiControl,, ConfigBox, % textboxConfigDisplay
+
+if(ResolutionText == "x")
+{
+  ResolutionText = Fullscreen
+}
 
 ;testing ki window resolution autodetect
 Gui, clacson_DebugMain:Add, Text,,Detected Resolution: %ResolutionText%
 Gui, clacson_DebugMain:Show, W300
 WinSet, AlwaysOnTop, On, KI CLACSON
-WinMove, KI CLACSON,, 2,750
+WinMove, KI CLACSON,, 2,700
 
 ;change from hex to rgb 255 format for color ranges
 SplitRGBColor(RGBColor, ByRef Red, ByRef Green, ByRef Blue)
@@ -214,7 +240,7 @@ Loop
     else
     {
       clacson_active = 0
-      GuiControl,, Textbox2, CLACSON: waiting...
+      GuiControl,, StateBox, Waiting...
     }
 
     ;check if active combo is on p1 side
@@ -313,8 +339,8 @@ Loop
         }
       }
       clacson_PrevComboLevel = %clacson_CL%
-      clacson_DebugMessage = CLACSON: %clacson_active% `nlevel: %clacson_CL%
-      GuiControl,, Textbox2, %clacson_DebugMessage%
+      clacson_DebugMessage = Active: %clacson_active% `nCLevel: %clacson_CL%
+      GuiControl,, StateBox, %clacson_DebugMessage%
       GuiControl,, Textbox3, %DebugRBGValString%
     }
     else
@@ -324,14 +350,14 @@ Loop
       clacson_AR3 = 1
       clacson_AR4 = 1
       DebugRBGValString =
-      GuiControl,, Textbox2, CLACSON: waiting...
+      GuiControl,, StateBox, Waiting...
       GuiControl,, Textbox3, %DebugRBGValString%
     }
 
   }
   else
   {
-    GuiControl,, Textbox2, CLACSON: paused...
+    GuiControl,, StateBox, Paused...
   }
   ;MouseGetPos,x,y
   ;PixelGetColor,rgb,x,y,RGB
@@ -340,3 +366,7 @@ Loop
   ;StringTrimLeft,rgb,rgb,2
   ;GuiControl,, clacson_Debug1, %rgb%
 }
+
+
+;debug thing, get mouse coords on alt + left click
+;!LButton::CursorToClip()
