@@ -1,6 +1,8 @@
 
 12/09/2020
   v0.0004
-  added a changelog! because that's a thing good devs do, right?
+  recoded to be object oriented (for my own future sanity).
+  will now properly terminate after the gui is closed. (give it a few seconds)
   implemented a potential fix for a false positive sound playback.
   added the frame delay back in that i forgot to put in by mistake. (oops)
+  added a changelog! because that's a thing good devs do, right?
