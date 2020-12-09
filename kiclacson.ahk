@@ -332,7 +332,7 @@ Loop
         DebugRBGValString = %p2hitsrgbdebug%%p2level2rgbdebug%%p2level3rgbdebug%%p2level4rgbdebug%
       }
 
-
+      ; it won't let me do dynamic object property naming so HECK IT
       if(combo.CurrentLevel > 1 and combo.CurrentLevel != combo.PreviousLevel)
       {
         if(aReady.level2 == 1 and combo.CurrentLevel == 2)
@@ -351,7 +351,7 @@ Loop
           SoundPlay, % A_WorkingDir . "\sounds\level4.wav"
         }
       }
-      combo["PreviousLevel"] = combo.CurrentLevel
+      combo.PreviousLevel := combo.CurrentLevel
       stateMessage = % "Active Side: " . combo.Active . "`nCombo Level: " . combo.CurrentLevel
       GuiControl,, StateBox, %stateMessage%
       GuiControl,, DebugFeed, %DebugRBGValString%
@@ -388,8 +388,6 @@ Loop
 */
 
 ^+LButton::cursorGetLocation()
-
-
 cursorGetLocation()
 {
   if(config.DebugMode)
