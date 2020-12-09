@@ -1,7 +1,7 @@
 /*
   kiclacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0.0004 pre-alpha
+  version: 0.0006 pre-alpha
 */
 
 ; Let it run till death but only once.
@@ -262,37 +262,55 @@ Loop
         ; check level 2
         PixelGetColor,p1level2,pos.P1Level2,pos.LevelY,RGB
         SplitRGBColor(p1level2,Red,Green,Blue)
+
         if(config.DebugMode)
         {
           p1level2rgbdebug = RGB: %Red%,%Green%,%Blue%`n
         }
+
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 2
+        }
+        else
+        {
+          aReady.level2 := 1
         }
 
         ; check level 3
         PixelGetColor,p1level3,pos.P1Level3,pos.LevelY,RGB
         SplitRGBColor(p1level3,Red,Green,Blue)
+
         if(config.DebugMode)
         {
           p1level3rgbdebug = RGB: %Red%,%Green%,%Blue%`n
         }
+
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 3
+        }
+        else
+        {
+          aReady.level3 := 1
         }
 
         ; check level 4
         PixelGetColor,p1level4,pos.P1Level4,pos.LevelY,RGB
         SplitRGBColor(p1level4,Red,Green,Blue)
+
         if(config.DebugMode)
         {
           p1level4rgbdebug = RGB: %Red%,%Green%,%Blue%
         }
+
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 4
+        }
+        else
+        {
+          aReady.level4 := 1
         }
         DebugRBGValString = %p1hitsrgbdebug%%p1level2rgbdebug%%p1level3rgbdebug%%p1level4rgbdebug%
       }
@@ -310,35 +328,53 @@ Loop
         {
           combo.CurrentLevel := 2
         }
+        else
+        {
+          aReady.level2 := 1
+        }
 
         ; check level 3
         PixelGetColor,p2level3,pos.P2Level3,pos.LevelY,RGB
         SplitRGBColor(p2level3,Red,Green,Blue)
-        if(levelCheck(Red,Green,Blue))
-        {
-          combo.CurrentLevel := 3
-        }
+
         if(config.DebugMode)
         {
           p2level3rgbdebug = RGB: %Red%,%Green%,%Blue%`n
         }
 
+        if(levelCheck(Red,Green,Blue))
+        {
+          combo.CurrentLevel := 3
+        }
+        else
+        {
+          aReady.level3 := 1
+        }
+
+
         ; check level 4
         PixelGetColor,p2level4,pos.P2Level4,pos.LevelY,RGB
         SplitRGBColor(p2level4,Red,Green,Blue)
-        if(levelCheck(Red,Green,Blue))
-        {
-          combo.CurrentLevel := 4
-        }
+
         if(config.DebugMode)
         {
           p2level4rgbdebug = RGB: %Red%,%Green%,%Blue%
         }
+
+        if(levelCheck(Red,Green,Blue))
+        {
+          combo.CurrentLevel := 4
+        }
+        else
+        {
+          aReady.level4 := 1
+        }
+
         DebugRBGValString = %p2hitsrgbdebug%%p2level2rgbdebug%%p2level3rgbdebug%%p2level4rgbdebug%
       }
 
       ; it won't let me do dynamic object property naming so HECK IT
-      if(combo.CurrentLevel > 1 and combo.CurrentLevel > combo.PreviousLevel)
+      if(combo.CurrentLevel > 1 and combo.CurrentLevel != combo.PreviousLevel)
       {
         if(aReady.level2 == 1 and combo.CurrentLevel == 2)
         {
