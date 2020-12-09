@@ -1,7 +1,7 @@
 /*
   kiclacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0003 pre-alpha
+  version: 0.0004 pre-alpha
 */
 
 ; Let it run till death but only once.
@@ -22,6 +22,9 @@
   audioReady:
     a simple object to make the audio ready state
     for sound playback more legible
+
+  comboState
+    simple object for storing combo state information
 
 */
 
@@ -209,6 +212,8 @@ GuiControl,, boxConfig, % "Resolution:  " . config.Resolution . "`n" . "Check Ev
 
 Loop
 {
+  sleep config.Delay
+
   if WinActive("Killer Instinct")
   {
     ; determine ui side with hit counter lettering
@@ -333,7 +338,7 @@ Loop
       }
 
       ; it won't let me do dynamic object property naming so HECK IT
-      if(combo.CurrentLevel > 1 and combo.CurrentLevel != combo.PreviousLevel)
+      if(combo.CurrentLevel > 1 and combo.CurrentLevel > combo.PreviousLevel)
       {
         if(aReady.level2 == 1 and combo.CurrentLevel == 2)
         {
