@@ -1,18 +1,27 @@
 
 12/09/2020
+  v0.0008
+    updated detection parameters for combo level
+    reimplemented prior attempted fix for false
+    positives
+
+  v0.0007
+    minor code cleanup
+    fixed p2 side detection (typo lol)
+
   v0.0006
-  reverted a change and tried another fixed
-  to address the false positive and no audio
-  after reset bugs
+    reverted a change and tried another fixed
+    to address the false positive and no audio
+    after reset bugs
 
   v0.0005
-  fixed a problem with audio not playing at all
-  after a reset where the hit counter does not
-  have time to disappear and reappear
+    fixed a problem with audio not playing at all
+    after a reset where the hit counter does not
+    have time to disappear and reappear
 
   v0.0004
-  recoded to be object oriented (for my own future sanity).
-  will now properly terminate after the gui is closed. (give it a few seconds)
-  implemented a potential fix for a false positive sound playback.
-  added the frame delay back in that i forgot to put in by mistake. (oops)
-  added a changelog! because that's a thing good devs do, right?
+    recoded to be object oriented (for my own future sanity).
+    will now properly terminate after the gui is closed. (give it a few seconds)
+    implemented a potential fix for a false positive sound playback.
+    added the frame delay back in that i forgot to put in by mistake. (oops)
+    added a changelog! because that's a thing good devs do, right?

@@ -1,7 +1,7 @@
 /*
   kiclacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0.0006 pre-alpha
+  version: 0.0008 pre-alpha
 */
 
 ; Let it run till death but only once.
@@ -11,25 +11,25 @@
 /*
   Class definitions
 
-  config:
+  Configuration:
     a simple object to make imported config settings
     more legible
 
-  position:
+  Position:
     a simple object to make imported resolution-specific
     coordinates more legible
 
-  audioReady:
+  AudioReady:
     a simple object to make the audio ready state
     for sound playback more legible
 
-  comboState
+  ComboState
     simple object for storing combo state information
 
 */
 
 
-Class configuration
+Class Configuration
 {
   __new(Resolution,FrameDelay,DebugMode)
   {
@@ -39,20 +39,20 @@ Class configuration
 }
 
 
-Class position
+Class Position
 {
-  __new(HitsY,LevelY,P1HitsX,P1Level2,P1Level3,P1Level4,P2HitsY,P2Level2,P2Level3,P2Level4)
+  __new(HitsY,LevelY,P1HitsX,P1Level2,P1Level3,P1Level4,P2HitsX,P2Level2,P2Level3,P2Level4)
   {
     this.HitsY := HitsY, this.LevelY := LevelY, this.P1HitsX := P1HitsX,
     this.P1Level2 := P1Level2, this.P1Level3 := P1Level3,
-    this.P1Level4 := P1Level4, this.P2HitsY := P2HitsY,
+    this.P1Level4 := P1Level4, this.P2HitsX := P2HitsX,
     this.P2Level2 := P2Level2, this.P2Level3 := P2Level3,
     this.P2Level4 := P2Level4
   }
 }
 
 
-Class audioReady
+Class AudioReady
 {
   __new(level2,level3,level4)
   {
@@ -61,7 +61,7 @@ Class audioReady
 }
 
 
-Class comboState
+Class ComboState
 {
   __new(Active,CurrentLevel,PreviousLevel)
   {
@@ -117,8 +117,8 @@ comboActive(Red,Green,Blue)
 
 levelCheck(Red,Green,Blue)
 {
-  if( Red >= 221 and Red <= 237 and Green >= 240
-      and Blue <= 187 and Blue >= 125 )
+  if( Red >= 221 and Red <= 240 and Green >= 240
+      and Blue <= 195 and Blue >= 125 )
   {
     return 1
   }
@@ -188,10 +188,10 @@ Loop, parse, ResolutionFileContent, `,
 }
 
 
-global config := new configuration(tconf[1],tconf[2],tconf[3])
-global pos := new position(tpos[1],tpos[2],tpos[3],tpos[4],tpos[5],tpos[6],tpos[7],tpos[8],tpos[9],tpos[10])
-global combo := new comboState(0,0,0)
-global aReady := new audioReady(1,1,1)
+global config := new Configuration(tconf[1],tconf[2],tconf[3])
+global pos := new Position(tpos[1],tpos[2],tpos[3],tpos[4],tpos[5],tpos[6],tpos[7],tpos[8],tpos[9],tpos[10])
+global combo := new ComboState(0,0,0)
+global aReady := new AudioReady(1,1,1)
 
 
 ; intialize and position the gui
@@ -203,6 +203,7 @@ WinMove, KI CLACSON,, 1,(A_ScreenHeight)-(WinHeight)-40
 ; kill the script if the gui is closed
 SetTimer, checkForWindow, 5000 ; check every 5 seconds
 
+; display current configuration
 GuiControl,, boxConfig, % "Resolution:  " . config.Resolution . "`n" . "Check Every: " . config.FrameDelay . "f" . " (" . config.Delay . "ms)"
 
 
@@ -230,24 +231,24 @@ Loop
     ; check if active combo is on p1 side
     if(comboActive(p1Red,p1Green,p1Blue))
     {
-      combo["Active"] := "P1"
+      combo.Active := "P1"
       if(config.DebugMode)
       {
-        p1hitsrgbdebug = RGB: %p1Red%,%p1Green%,%p1Blue%`n
+        p1hitsrgbdebug = HITS RGB: %p1Red%,%p1Green%,%p1Blue%`n
       }
     }
     ; check if active combo is on p2 side
     else if(comboActive(p2Red,p2Green,p2Blue))
     {
-      combo["Active"] := "P2"
+      combo.Active := "P2"
       if(config.DebugMode)
       {
-        p1hitsrgbdebug = RGB: %p2Red%,%p2Green%,%p2Blue%`n
+        p2hitsrgbdebug = HITS RGB: %p2Red%,%p2Green%,%p2Blue%`n
       }
     }
     else
     {
-      combo["Active"] := 0
+      combo.Active := 0
       GuiControl,, StateBox, Waiting...
     }
 
@@ -261,11 +262,11 @@ Loop
       {
         ; check level 2
         PixelGetColor,p1level2,pos.P1Level2,pos.LevelY,RGB
-        SplitRGBColor(p1level2,Red,Green,Blue)
+        splitRGBColor(p1level2,Red,Green,Blue)
 
         if(config.DebugMode)
         {
-          p1level2rgbdebug = RGB: %Red%,%Green%,%Blue%`n
+          p1level2rgbdebug = LVL2 RGB: %Red%,%Green%,%Blue%`n
         }
 
         if(levelCheck(Red,Green,Blue))
@@ -279,11 +280,11 @@ Loop
 
         ; check level 3
         PixelGetColor,p1level3,pos.P1Level3,pos.LevelY,RGB
-        SplitRGBColor(p1level3,Red,Green,Blue)
+        splitRGBColor(p1level3,Red,Green,Blue)
 
         if(config.DebugMode)
         {
-          p1level3rgbdebug = RGB: %Red%,%Green%,%Blue%`n
+          p1level3rgbdebug = LVL3 RGB: %Red%,%Green%,%Blue%`n
         }
 
         if(levelCheck(Red,Green,Blue))
@@ -297,11 +298,11 @@ Loop
 
         ; check level 4
         PixelGetColor,p1level4,pos.P1Level4,pos.LevelY,RGB
-        SplitRGBColor(p1level4,Red,Green,Blue)
+        splitRGBColor(p1level4,Red,Green,Blue)
 
         if(config.DebugMode)
         {
-          p1level4rgbdebug = RGB: %Red%,%Green%,%Blue%
+          p1level4rgbdebug = LVL4 RGB: %Red%,%Green%,%Blue%
         }
 
         if(levelCheck(Red,Green,Blue))
@@ -318,10 +319,10 @@ Loop
       {
         ; check level 2
         PixelGetColor,p2level2,pos.P2Level2,pos.LevelY,RGB
-        SplitRGBColor(p2level2,Red,Green,Blue)
+        splitRGBColor(p2level2,Red,Green,Blue)
         if(config.DebugMode)
         {
-          p2level2rgbdebug = RGB: %Red%,%Green%,%Blue%`n
+          p2level2rgbdebug = LVL2 RGB: %Red%,%Green%,%Blue%`n
         }
 
         if(levelCheck(Red,Green,Blue))
@@ -335,11 +336,11 @@ Loop
 
         ; check level 3
         PixelGetColor,p2level3,pos.P2Level3,pos.LevelY,RGB
-        SplitRGBColor(p2level3,Red,Green,Blue)
+        splitRGBColor(p2level3,Red,Green,Blue)
 
         if(config.DebugMode)
         {
-          p2level3rgbdebug = RGB: %Red%,%Green%,%Blue%`n
+          p2level3rgbdebug = LVL3 RGB: %Red%,%Green%,%Blue%`n
         }
 
         if(levelCheck(Red,Green,Blue))
@@ -354,11 +355,11 @@ Loop
 
         ; check level 4
         PixelGetColor,p2level4,pos.P2Level4,pos.LevelY,RGB
-        SplitRGBColor(p2level4,Red,Green,Blue)
+        splitRGBColor(p2level4,Red,Green,Blue)
 
         if(config.DebugMode)
         {
-          p2level4rgbdebug = RGB: %Red%,%Green%,%Blue%
+          p2level4rgbdebug = LVL4 RGB: %Red%,%Green%,%Blue%
         }
 
         if(levelCheck(Red,Green,Blue))
@@ -374,7 +375,7 @@ Loop
       }
 
       ; it won't let me do dynamic object property naming so HECK IT
-      if(combo.CurrentLevel > 1 and combo.CurrentLevel != combo.PreviousLevel)
+      if(combo.CurrentLevel > 1 and combo.CurrentLevel > combo.PreviousLevel)
       {
         if(aReady.level2 == 1 and combo.CurrentLevel == 2)
         {
