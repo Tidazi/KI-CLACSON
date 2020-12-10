@@ -1,7 +1,7 @@
 /*
   kiclacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0.0008 pre-alpha
+  version: 0.0009 pre-alpha
 */
 
 ; Let it run till death but only once.
@@ -89,7 +89,13 @@ Class ComboState
     kiclacsonGui
       main gui function
 
+    colorRange
+      function for narrowing down the color range of the combo
+      level boxes to eliminate false positives
+
     checkForWindow
+      function to see if the ki clacson gui still exists
+      and to kill clacson if it doesn't after 5s
 
 */
 
@@ -117,8 +123,12 @@ comboActive(Red,Green,Blue)
 
 levelCheck(Red,Green,Blue)
 {
-  if( Red >= 221 and Red <= 240 and Green >= 240
-      and Blue <= 195 and Blue >= 125 )
+/*
+if( Red >= 225 and Red <= 240 and Green >= 240
+    and Blue <= 195 and Blue >= 125 )
+*/
+  if( Red >= 234 and Red <= 240 and Green >= 250
+      and Blue <= 190 and Blue >= 182 )
   {
     return 1
   }
@@ -129,9 +139,50 @@ levelCheck(Red,Green,Blue)
 }
 
 
+colorRange(red,green,blue)
+{
+  global redHigh, redLow, greenHigh, greenLow, blueHigh, blueLow
+  if(!redLow)
+  {
+    redLow := 255
+  }
+  if(!greenLow)
+  {
+    greenLow := 255
+  }
+  if(!blueLow)
+  {
+    blueLow := 255
+  }
+  if(red > redHigh)
+  {
+    redHigh := red
+  }
+  if(red < redLow)
+  {
+    redLow := red
+  }
+  if(green > greenHigh)
+  {
+    greenHigh := green
+  }
+  if(green < greenLow)
+  {
+    greenLow := green
+  }
+  if(blue > blueHigh)
+  {
+    blueHigh := blue
+  }
+  if(blue < blueLow)
+  {
+    blueLow := blue
+  }
+}
+
 kiclacsonGui()
 {
-  global boxConfig, stateBox, debugFeed, configDisplay
+  global boxConfig, stateBox, debugFeed, colorRangeFeed, configDisplay
   Gui, kiclacsonGui:New,, KI CLACSON
   Gui, kiclacsonGui:Font,, Fixedsys
   Gui, kiclacsonGui:Add, Text,, Configuration
@@ -142,6 +193,8 @@ kiclacsonGui()
   {
     Gui, kiclacsonGui:Add, Text,, Debug Feed
     Gui, kiclacsonGui:Add, Edit, Disabled r4 vdebugFeed w230
+    Gui, kiclacsonGui:Add, Text,, Color Range Feed
+    Gui, kiclacsonGui:Add, Edit, Disabled r6 vcolorRangeFeed w230
   }
   GuiControl,, boxConfig, % configDisplay
   Gui, kiclacsonGui:Show, W250
@@ -272,6 +325,7 @@ Loop
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 2
+          colorRange(Red,Green,Blue)
         }
         else
         {
@@ -290,6 +344,7 @@ Loop
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 3
+          colorRange(Red,Green,Blue)
         }
         else
         {
@@ -308,6 +363,7 @@ Loop
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 4
+          colorRange(Red,Green,Blue)
         }
         else
         {
@@ -320,6 +376,7 @@ Loop
         ; check level 2
         PixelGetColor,p2level2,pos.P2Level2,pos.LevelY,RGB
         splitRGBColor(p2level2,Red,Green,Blue)
+
         if(config.DebugMode)
         {
           p2level2rgbdebug = LVL2 RGB: %Red%,%Green%,%Blue%`n
@@ -328,6 +385,7 @@ Loop
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 2
+          colorRange(Red,Green,Blue)
         }
         else
         {
@@ -346,6 +404,7 @@ Loop
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 3
+          colorRange(Red,Green,Blue)
         }
         else
         {
@@ -365,6 +424,7 @@ Loop
         if(levelCheck(Red,Green,Blue))
         {
           combo.CurrentLevel := 4
+          colorRange(Red,Green,Blue)
         }
         else
         {
@@ -397,6 +457,7 @@ Loop
       stateMessage = % "Active Side: " . combo.Active . "`nCombo Level: " . combo.CurrentLevel
       GuiControl,, StateBox, %stateMessage%
       GuiControl,, DebugFeed, %DebugRBGValString%
+      GuiControl,, colorRangeFeed, % "Red High: " . redHigh . "`nRed Low: " . redLow . "`nGreen High: " . greenHigh . "`nGreen Low: " . greenLow . "`nBlue High: " . blueHigh . "`nBlue Low: " . blueLow
     }
     else
     {
@@ -429,7 +490,12 @@ Loop
 
 */
 
+
+
+
+
 ^+LButton::cursorGetLocation()
+^+Space::cursorGetLocation()
 cursorGetLocation()
 {
   if(config.DebugMode)
@@ -443,7 +509,12 @@ cursorGetLocation()
     Xs := Xm - Xws
     Ys := Ym - Yws
     CoordMode, Tooltip, Screen
-    clipboard = Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%
+    PixelGetColor,cursorColor,Xm,Ym,RGB
+    splitRGBColor(cursorColor,cRed,cGreen,cBlue)
+
+    clipboard = Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%`nRBG: %cRed%, %cGreen%, %cBlue%
+    ToolTip, Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%`nRBG: %cRed%`, %cGreen%`, %cBlue%,150,500
+
     return
   }
 }

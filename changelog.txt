@@ -1,3 +1,8 @@
+12/10/2020
+  v0.0009
+    created a function to narrow down color ranges
+    for combo level boxes, and also narrowed down
+    the ranges using the data obtained
 
 12/09/2020
   v0.0008
