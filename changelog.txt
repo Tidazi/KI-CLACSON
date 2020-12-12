@@ -1,3 +1,14 @@
+12/12/2929
+  v0.0011
+    switched over to json for resolution and settings storage
+    now using the JSON library by cocobelgica on github
+    removed the defunct resolutions folder (and files)
+    removed the defunct config file
+    removed defunct class definitions
+    added the ability to change the KI resolution to the GUI
+    made it so changes to the KI resolution setting are saved automatically
+    updated the GUI to reflect the changes to the code
+
 12/11/2020
   v0.0010
     added a fix for steam version resolution mismatch

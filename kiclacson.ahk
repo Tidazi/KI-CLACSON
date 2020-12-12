@@ -1,23 +1,16 @@
 /*
   kiclacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0.0010 pre-alpha
+  version: 0.0011 pre-alpha
 */
 
 ; Let it run till death but only once.
 #Persistent
 #SingleInstance force
+#Include Lib\JSON.ahk
 
 /*
   Class definitions
-
-  Configuration:
-    a simple object to make imported config settings
-    more legible
-
-  Position:
-    a simple object to make imported resolution-specific
-    coordinates more legible
 
   AudioReady:
     a simple object to make the audio ready state
@@ -28,28 +21,6 @@
 
 */
 
-
-Class Configuration
-{
-  __new(Resolution,FrameDelay,DebugMode)
-  {
-    this.Resolution := Resolution, this.FrameDelay := FrameDelay,
-    this.DebugMode := DebugMode, this.Delay := (FrameDelay * 16)
-  }
-}
-
-
-Class Position
-{
-  __new(HitsY,LevelY,P1HitsX,P1Level2,P1Level3,P1Level4,P2HitsX,P2Level2,P2Level3,P2Level4)
-  {
-    this.HitsY := HitsY, this.LevelY := LevelY, this.P1HitsX := P1HitsX,
-    this.P1Level2 := P1Level2, this.P1Level3 := P1Level3,
-    this.P1Level4 := P1Level4, this.P2HitsX := P2HitsX,
-    this.P2Level2 := P2Level2, this.P2Level3 := P2Level3,
-    this.P2Level4 := P2Level4
-  }
-}
 
 
 Class AudioReady
@@ -141,10 +112,9 @@ if( Red >= 234 and Red <= 240 and Green >= 250
   }
 }
 
-
+global redHigh, redLow, greenHigh, greenLow, blueHigh, blueLow
 colorRange(red,green,blue)
 {
-  global redHigh, redLow, greenHigh, greenLow, blueHigh, blueLow
   if(!redLow)
   {
     redLow := 255
@@ -183,47 +153,135 @@ colorRange(red,green,blue)
   }
 }
 
+
+global boxConfig, stateBox, debugFeed, colorRangeFeed, resolutionBox, configDisplay, currentResolution, checkInterval
 kiclacsonGui()
 {
-  global boxConfig, stateBox, debugFeed, colorRangeFeed, configDisplay
+  resolutionArrayW := []
+  resolutionArrayFS := []
+  allResolutions =
+  resolutionListW =
+  resolutionListFS =
+  for k in resolutions
+  {
+    if(InStr(k,"w"))
+    {
+      resolutionArrayW.Push(k)
+    }
+    if(InStr(k,"fs"))
+    {
+      resolutionArrayFS.Push(k)
+    }
+    allResolutions .= k
+  }
+  for k, v in resolutionArrayW
+  {
+    if(v == config.Resolution)
+    {
+      resolutionListW.=v . "A|"
+    }
+    else
+    {
+      resolutionListW.=v . "|"
+    }
+  }
+  for k, v in resolutionArrayFS
+  {
+    if(v == config.Resolution)
+    {
+      resolutionListFS.=v . "A|"
+    }
+    else
+    {
+      resolutionListFS.=v . "|"
+    }
+  }
+
+  Sort,resolutionListW, D| N
+  Sort,resolutionListFS, D| N
+  resolutionListW := StrReplace(resolutionListW,"A|","||")
+  resolutionListFS := StrReplace(resolutionListFS,"A|","||")
+  resolutionList := "WINDOWED RESOLUTIONS|" resolutionListW . "FULLSCREEN RESOLUTIONS|" . resolutionListFS
+
+  ;msgbox, % resolutionList
   Gui, kiclacsonGui:New,, KI CLACSON
   Gui, kiclacsonGui:Font,, Fixedsys
-  Gui, kiclacsonGui:Add, Text,, Configuration
-  Gui, kiclacsonGui:Add, Edit, Disabled r2 vboxConfig w230
+  ;Gui, kiclacsonGui:Add, Text,, Configuration
+  ;Gui, kiclacsonGui:Add, Edit,  r2 vboxConfig w230
+  Gui, kiclacsonGui:Add, Text,, KI Resolution
+  Gui, kiclacsonGui:Add, DropDownList, guserChangeResolution vcurrentResolution w230, % resolutionList
+  Gui, kiclacsonGui:Add, Text,, Check Interval
+  Gui, kiclacsonGui:Add, Edit, r1 vcheckInterval w230 disabled, % config.frameDelay . "f"
   Gui, kiclacsonGui:Add, Text,, Current State
-  Gui, kiclacsonGui:Add, Edit, Disabled r2 vstateBox w230
-  if(config.DebugMode)
+  Gui, kiclacsonGui:Add, Edit,  r2 vstateBox w230 disabled
+  if(config.debugMode)
   {
+    Gui, kiclacsonGui:Add, Text,, Detected Resolution
+    Gui, kiclacsonGui:Add, Edit,  r1 vresolutionBox w230 disabled
     Gui, kiclacsonGui:Add, Text,, Debug Feed
-    Gui, kiclacsonGui:Add, Edit, Disabled r4 vdebugFeed w230
+    Gui, kiclacsonGui:Add, Edit,  r4 vdebugFeed w230
     Gui, kiclacsonGui:Add, Text,, Color Range Feed
-    Gui, kiclacsonGui:Add, Edit, Disabled r6 vcolorRangeFeed w230
+    Gui, kiclacsonGui:Add, Edit,  r6 vcolorRangeFeed w230
   }
-  GuiControl,, boxConfig, % configDisplay
+
   Gui, kiclacsonGui:Show, W250
 
   return winexist()
 
 }
 
+userChangeResolution()
+{
+  GuiControlGet, currentResolution
+
+  if(currentResolution == "WINDOWED RESOLUTIONS" or currentResolution == "FULLSCREEN RESOLUTIONS")
+  {
+    GuiControl, ChooseString, currentResolution, % config.resolution
+  }
+  else
+  {
+    ;msgbox, % currentResolution
+    config.resolution := currentResolution
+    updateUserSettings()
+  }
+}
+
+updateUserSettings()
+{
+  local settingsString, settingsFile
+  settingsString := JSON.dump(config)
+  settingsFile := FileOpen("settings.json","w")
+  settingsFile.write(settingsString)
+  settingsFile.close()
+  ;msgbox, % settingsString
+}
+
 fixSteamKI()
 {
-  if(!InStr(config.Resolution,"fs"))
+  if(!InStr(config.resolution,"fs"))
   {
     WinGetPos,,,kiwinW,kiwinH,Killer Instinct
     kiwinAdjW := kiwinW-16
     kiwinAdjH := kiwinH-41
     ResolutionText = % "" . kiwinAdjW . "x" . kiwinAdjH
-    ;Gui, kiclacsonGui:Add, Text,,Detected Resolution: %ResolutionText%
-    confRes := StrSplit(config.Resolution, "x")
+    GuiControl, kiclacsonGui:, resolutionBox, % ResolutionText
+    confRes := StrSplit(config.resolution, "x")
     confWidth := confRes[1]
     confHeight := confRes[2]
 
     if(confHeight != kiwinAdjH)
     {
       WinMove,Killer Instinct,,,,(confWidth+16),(confHeight+41)
-      msgbox, % confWidth  . "x" . confHeight . "`n" . ResolutionText
+      ;msgbox, % confWidth  . "x" . confHeight . "`n" . ResolutionText
     }
+    else
+    {
+      ;msgbox, % kiwinAdjW . "x" . kiwinAdjH
+    }
+  }
+  else
+  {
+    ResolutionText = "(Fullscreen)"
   }
   ;msgbox, % confWidth  . "x" . confHeight
 }
@@ -243,35 +301,20 @@ checkForWindow()
   KI CLACSON initialization
 */
 
-; create temporary objects
-tconf := object()
-tpos := object()
-
-; open config file
-FileRead, ConfigFileContent, config.txt
-
-; populate config object from file
-Loop, parse, ConfigFileContent, `,
-{
-  tconf.push(A_LoopField)
-}
-
-; open resolution file
-FileRead, ResolutionFileContent, % "resolutions\" . tconf[1] . ".txt"
-
-; populate resolution object from file
-Loop, parse, ResolutionFileContent, `,
-{
-  tpos.push(A_LoopField)
-}
+; load all position values for all resolutions
+FileRead, resolutionsString, resolutions.json
+global resolutions := JSON.Load(resolutionsString)
 
 
-global config := new Configuration(tconf[1],tconf[2],tconf[3])
-global pos := new Position(tpos[1],tpos[2],tpos[3],tpos[4],tpos[5],tpos[6],tpos[7],tpos[8],tpos[9],tpos[10])
+; load user settings
+FileRead, settingsString, settings.json
+global config := JSON.Load(settingsString)
+config.Delay := (config.frameDelay * 16)
+
+; assign current position set
+global pos := resolutions[config.resolution]
 global combo := new ComboState(0,0,0)
 global aReady := new AudioReady(1,1,1)
-
-fixSteamKI()
 
 
 ; intialize and position the gui
@@ -282,19 +325,21 @@ WinMove, KI CLACSON,, 1,(A_ScreenHeight)-(WinHeight)-40
 
 ; kill the script if the gui is closed
 SetTimer, checkForWindow, 5000 ; check every 5 seconds
+SetTimer, fixSteamKI, 2000
 
 ; display current configuration
-GuiControl,, boxConfig, % "Resolution:  " . config.Resolution . "`n" . "Check Every: " . config.FrameDelay . "f" . " (" . config.Delay . "ms)"
+GuiControl,kiclacsonGui:, boxConfig, % "Resolution:  " . config.resolution . "`n" . "Check Every: " . config.frameDelay . "f" . " (" . config.Delay . "ms)"
 
+
+;IniRead, resolutionIni, resolutions.ini, 1600x900
+;msgbox, % resolutionIni
 
 /*
   Main KI CLACSON loop
 */
 
-Loop
+comboLevelMain()
 {
-  sleep config.Delay
-
   if WinActive("Killer Instinct")
   {
     ; determine ui side with hit counter lettering
@@ -312,7 +357,7 @@ Loop
     if(comboActive(p1Red,p1Green,p1Blue))
     {
       combo.Active := "P1"
-      if(config.DebugMode)
+      if(config.debugMode)
       {
         p1hitsrgbdebug = HITS RGB: %p1Red%,%p1Green%,%p1Blue%`n
       }
@@ -321,7 +366,7 @@ Loop
     else if(comboActive(p2Red,p2Green,p2Blue))
     {
       combo.Active := "P2"
-      if(config.DebugMode)
+      if(config.debugMode)
       {
         p2hitsrgbdebug = HITS RGB: %p2Red%,%p2Green%,%p2Blue%`n
       }
@@ -329,7 +374,7 @@ Loop
     else
     {
       combo.Active := 0
-      GuiControl,, StateBox, Waiting...
+      GuiControl,kiclacsonGui:, StateBox, Waiting...
     }
 
     ; check if active combo is on p1 side
@@ -344,7 +389,7 @@ Loop
         PixelGetColor,p1level2,pos.P1Level2,pos.LevelY,RGB
         splitRGBColor(p1level2,Red,Green,Blue)
 
-        if(config.DebugMode)
+        if(config.debugMode)
         {
           p1level2rgbdebug = LVL2 RGB: %Red%,%Green%,%Blue%`n
         }
@@ -363,7 +408,7 @@ Loop
         PixelGetColor,p1level3,pos.P1Level3,pos.LevelY,RGB
         splitRGBColor(p1level3,Red,Green,Blue)
 
-        if(config.DebugMode)
+        if(config.debugMode)
         {
           p1level3rgbdebug = LVL3 RGB: %Red%,%Green%,%Blue%`n
         }
@@ -382,7 +427,7 @@ Loop
         PixelGetColor,p1level4,pos.P1Level4,pos.LevelY,RGB
         splitRGBColor(p1level4,Red,Green,Blue)
 
-        if(config.DebugMode)
+        if(config.debugMode)
         {
           p1level4rgbdebug = LVL4 RGB: %Red%,%Green%,%Blue%
         }
@@ -404,7 +449,7 @@ Loop
         PixelGetColor,p2level2,pos.P2Level2,pos.LevelY,RGB
         splitRGBColor(p2level2,Red,Green,Blue)
 
-        if(config.DebugMode)
+        if(config.debugMode)
         {
           p2level2rgbdebug = LVL2 RGB: %Red%,%Green%,%Blue%`n
         }
@@ -423,7 +468,7 @@ Loop
         PixelGetColor,p2level3,pos.P2Level3,pos.LevelY,RGB
         splitRGBColor(p2level3,Red,Green,Blue)
 
-        if(config.DebugMode)
+        if(config.debugMode)
         {
           p2level3rgbdebug = LVL3 RGB: %Red%,%Green%,%Blue%`n
         }
@@ -443,7 +488,7 @@ Loop
         PixelGetColor,p2level4,pos.P2Level4,pos.LevelY,RGB
         splitRGBColor(p2level4,Red,Green,Blue)
 
-        if(config.DebugMode)
+        if(config.debugMode)
         {
           p2level4rgbdebug = LVL4 RGB: %Red%,%Green%,%Blue%
         }
@@ -482,9 +527,9 @@ Loop
       }
       combo.PreviousLevel := combo.CurrentLevel
       stateMessage = % "Active Side: " . combo.Active . "`nCombo Level: " . combo.CurrentLevel
-      GuiControl,, StateBox, %stateMessage%
-      GuiControl,, DebugFeed, %DebugRBGValString%
-      GuiControl,, colorRangeFeed, % "Red High: " . redHigh . "`nRed Low: " . redLow . "`nGreen High: " . greenHigh . "`nGreen Low: " . greenLow . "`nBlue High: " . blueHigh . "`nBlue Low: " . blueLow
+      GuiControl,kiclacsonGui:, StateBox, %stateMessage%
+      GuiControl,kiclacsonGui:, DebugFeed, %DebugRBGValString%
+      GuiControl,kiclacsonGui:, colorRangeFeed, % "Red High:   " . redHigh . "`nRed Low:    " . redLow . "`nGreen High: " . greenHigh . "`nGreen Low:  " . greenLow . "`nBlue High:  " . blueHigh . "`nBlue Low:   " . blueLow
     }
     else
     {
@@ -493,16 +538,20 @@ Loop
       aReady.level3 := 1
       aReady.level4 := 1
       DebugRBGValString =
-      GuiControl,, StateBox, Waiting...
-      GuiControl,, DebugFeed, %DebugRBGValString%
+      GuiControl,kiclacsonGui:, StateBox, Waiting...
+      GuiControl,kiclacsonGui:, DebugFeed, %DebugRBGValString%
     }
 
     }
     else
     {
-      GuiControl,, StateBox, Paused...
+      GuiControl,kiclacsonGui:, StateBox, Paused...
     }
-  }
+}
+
+
+SetTimer,comboLevelMain,% config.Delay
+
 
 
 /*
@@ -525,7 +574,7 @@ Loop
 ^+Space::cursorGetLocation()
 cursorGetLocation()
 {
-  if(config.DebugMode)
+  if(config.debugMode)
   {
     MouseGetPos, Xm, Ym, id, control
     WinGetTitle, title, ahk_id %id%
