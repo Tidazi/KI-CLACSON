@@ -1,7 +1,7 @@
 /*
   kiclacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0.0009 pre-alpha
+  version: 0.0010 pre-alpha
 */
 
 ; Let it run till death but only once.
@@ -126,9 +126,12 @@ levelCheck(Red,Green,Blue)
 /*
 if( Red >= 225 and Red <= 240 and Green >= 240
     and Blue <= 195 and Blue >= 125 )
+
+if( Red >= 234 and Red <= 240 and Green >= 250
+    and Blue <= 190 and Blue >= 182 )
 */
-  if( Red >= 234 and Red <= 240 and Green >= 250
-      and Blue <= 190 and Blue >= 182 )
+  if( Red <= 240 and Red >= 225 and Green >= 240
+      and Blue <= 190 and Blue >= 154 )
   {
     return 1
   }
@@ -203,6 +206,28 @@ kiclacsonGui()
 
 }
 
+fixSteamKI()
+{
+  if(!InStr(config.Resolution,"fs"))
+  {
+    WinGetPos,,,kiwinW,kiwinH,Killer Instinct
+    kiwinAdjW := kiwinW-16
+    kiwinAdjH := kiwinH-41
+    ResolutionText = % "" . kiwinAdjW . "x" . kiwinAdjH
+    ;Gui, kiclacsonGui:Add, Text,,Detected Resolution: %ResolutionText%
+    confRes := StrSplit(config.Resolution, "x")
+    confWidth := confRes[1]
+    confHeight := confRes[2]
+
+    if(confHeight != kiwinAdjH)
+    {
+      WinMove,Killer Instinct,,,,(confWidth+16),(confHeight+41)
+      msgbox, % confWidth  . "x" . confHeight . "`n" . ResolutionText
+    }
+  }
+  ;msgbox, % confWidth  . "x" . confHeight
+}
+
 
 checkForWindow()
 {
@@ -245,6 +270,8 @@ global config := new Configuration(tconf[1],tconf[2],tconf[3])
 global pos := new Position(tpos[1],tpos[2],tpos[3],tpos[4],tpos[5],tpos[6],tpos[7],tpos[8],tpos[9],tpos[10])
 global combo := new ComboState(0,0,0)
 global aReady := new AudioReady(1,1,1)
+
+fixSteamKI(config.Resolution)
 
 
 ; intialize and position the gui

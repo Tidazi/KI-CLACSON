@@ -1,3 +1,9 @@
+12/11/2020
+  v0.0010
+    added a fix for steam version resolution mismatch
+    readjusted color ranges to be functional with fewer
+    false positives in both steam and win10 versions
+
 12/10/2020
   v0.0009
     created a function to narrow down color ranges
