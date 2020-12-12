@@ -271,7 +271,7 @@ global pos := new Position(tpos[1],tpos[2],tpos[3],tpos[4],tpos[5],tpos[6],tpos[
 global combo := new ComboState(0,0,0)
 global aReady := new AudioReady(1,1,1)
 
-fixSteamKI(config.Resolution)
+fixSteamKI()
 
 
 ; intialize and position the gui
