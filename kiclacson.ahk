@@ -68,6 +68,18 @@ Class ComboState
       function to see if the ki clacson gui still exists
       and to kill clacson if it doesn't after 5s
 
+    userChangeResolution
+      this function is called when the dropdown for the
+      KI Resolution setting is changed
+
+    updateUserSettings
+      saves the settings to the settings.json file
+
+    fixSteamKI
+      steam ki resolution tends to be incorrect and for some reason
+      it resizes itself sometimes which would break detection, this
+      will ensure that detection can work as intended
+
 */
 
 
@@ -297,45 +309,9 @@ checkForWindow()
 }
 
 
-/*
-  KI CLACSON initialization
-*/
-
-; load all position values for all resolutions
-FileRead, resolutionsString, resolutions.json
-global resolutions := JSON.Load(resolutionsString)
-
-
-; load user settings
-FileRead, settingsString, settings.json
-global config := JSON.Load(settingsString)
-config.Delay := (config.frameDelay * 16)
-
-; assign current position set
-global pos := resolutions[config.resolution]
-global combo := new ComboState(0,0,0)
-global aReady := new AudioReady(1,1,1)
-
-
-; intialize and position the gui
-kiclacsonGui()
-WinSet, AlwaysOnTop, On, KI CLACSON
-WinGetPos,,,,WinHeight,KI CLACSON
-WinMove, KI CLACSON,, 1,(A_ScreenHeight)-(WinHeight)-40
-
-; kill the script if the gui is closed
-SetTimer, checkForWindow, 5000 ; check every 5 seconds
-SetTimer, fixSteamKI, 2000
-
-; display current configuration
-GuiControl,kiclacsonGui:, boxConfig, % "Resolution:  " . config.resolution . "`n" . "Check Every: " . config.frameDelay . "f" . " (" . config.Delay . "ms)"
-
-
-;IniRead, resolutionIni, resolutions.ini, 1600x900
-;msgbox, % resolutionIni
 
 /*
-  Main KI CLACSON loop
+  Main KI CLACSON combo level detection function
 */
 
 comboLevelMain()
@@ -550,8 +526,41 @@ comboLevelMain()
 }
 
 
-SetTimer,comboLevelMain,% config.Delay
 
+/*
+  KI CLACSON initialization
+*/
+
+; load all position values for all resolutions
+FileRead, resolutionsString, resolutions.json
+global resolutions := JSON.Load(resolutionsString)
+
+
+; load user settings
+FileRead, settingsString, settings.json
+global config := JSON.Load(settingsString)
+config.Delay := (config.frameDelay * 16)
+
+; assign current position set
+global pos := resolutions[config.resolution]
+global combo := new ComboState(0,0,0)
+global aReady := new AudioReady(1,1,1)
+
+
+; intialize and position the gui
+kiclacsonGui()
+WinSet, AlwaysOnTop, On, KI CLACSON
+WinGetPos,,,,WinHeight,KI CLACSON
+WinMove, KI CLACSON,, 1,(A_ScreenHeight)-(WinHeight)-40
+
+; kill the script if the gui is closed
+SetTimer, checkForWindow, 5000 ; check every 5 seconds
+
+; resize ki if it's the wrong resolution
+SetTimer, fixSteamKI, 2000 ; check every 2 seconds
+
+; begin combo level detection routine
+SetTimer,comboLevelMain,% config.Delay ; user defined check interval
 
 
 /*
@@ -565,9 +574,6 @@ SetTimer,comboLevelMain,% config.Delay
 
 
 */
-
-
-
 
 
 ^+LButton::cursorGetLocation()
