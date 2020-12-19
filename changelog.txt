@@ -1,4 +1,18 @@
-12/12/2929
+12/19/2020
+  v0.0013
+    added un4seen bass as the new audio playback library
+    added in-clacson volume control
+    added a giant exit button to close clacson instead
+    fixed the resolution hotswap dropdown
+    disabled the windows fullscreen and close buttons (wasn't exiting cleanly)
+    did some minor code cleanup
+
+12/15/2020
+  v0.0012
+    sounds will now play only in the left channel if p1 side
+    sounds will now play only in the right channel if p2 side
+
+12/12/2020
   v0.0011
     switched over to json for resolution and settings storage
     now using the JSON library by cocobelgica on github

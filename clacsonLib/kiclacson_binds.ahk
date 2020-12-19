@@ -1,0 +1,2 @@
+^+LButton::cursorGetLocation()
+^+Space::cursorGetLocation()
