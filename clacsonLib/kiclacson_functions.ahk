@@ -40,13 +40,29 @@
 */
 
 
-splitRGBColor(RGBColor, ByRef Red, ByRef Green, ByRef Blue)
+
+splitARGBColor(RGBColor, ByRef Red, ByRef Green, ByRef Blue, ByRef Alpha=0)
 {
-    Red := RGBColor >> 16 & 0xFF
-    Green := RGBColor >> 8 & 0xFF
-    Blue := RGBColor & 0xFF
+  Red := ARGB_GET(RGBColor,"R")
+  Green := ARGB_GET(RGBColor,"G")
+  Blue := ARGB_GET(RGBColor,"B")
+  if(Alpha)
+  {
+    Alpha := ARGB_GET(RGBColor,"A")
+  }
 }
 
+isWindowFullScreen( winID )
+{
+	If ( !winID )
+  {
+    Return false
+  }
+
+	WinGet style, Style, ahk_id %WinID%
+	WinGetPos ,,,winW,winH, %WinID%
+	Return ((style & 0x20800000) or winH < A_ScreenHeight or winW < A_ScreenWidth) ? false : true
+}
 
 hitCounterCheck(Red,Green,Blue)
 {
@@ -123,7 +139,9 @@ colorRange(red,green,blue)
 }
 
 
-global VolumeSlider, volumeInput, volumeUpdown, boxConfig, stateBox, comboLevelFeed, colorRangeFeed, resolutionBox, mouseFeed, configDisplay, currentResolution, checkInterval
+global VolumeSlider, volumeInput, volumeUpdown, boxConfig, stateBox
+global comboLevelFeed, colorRangeFeed, resolutionBox, mouseFeed, configDisplay
+global currentResolution, checkInterval, fulgoreFeed
 kiclacsonGui()
 {
   resolutionArrayW := []
@@ -200,6 +218,8 @@ kiclacsonGui()
     Gui, kiclacsonGui:Add, Edit,  r6 vcolorRangeFeed w230
     Gui, kiclacsonGui:Add, Text,, Mouse Feed
     Gui, kiclacsonGui:Add, Edit,  r3 vmouseFeed w230
+    Gui, kiclacsonGui:Add, Text,, FulgoreFeed
+    Gui, kiclacsonGui:Add, Edit,  r6 vfulgoreFeed w230
   }
   gui, kiclacsonGui:Add, Button, h0 w0 default guserChangeVolume, Submit
   gui, kiclacsonGui:Add, Button, w230 gcloseClacson, EXIT  K I  CLACSON
@@ -230,6 +250,7 @@ userChangeResolution()
     ;msgbox, % currentResolution
     config.resolution := currentResolution
     pos := resolutions[config.resolution]
+    fpips := fulgorePips[config.resolution]
     updateUserSettings()
   }
 }

@@ -12,7 +12,7 @@
 */
 
 
-global cursorColor, Xr, Yr, Xm, Ym, cRed,cGreen,cBlue
+global cursorColor, Xr, Yr, Xm, Ym, cRed,cGreen,cBlue, mouseFeedString
 WatchCursor()
 {
   MouseGetPos, Xm, Ym, id, control
@@ -23,10 +23,20 @@ WatchCursor()
   Yr := Ym - Yw
   Xs := Xm - Xws
   Ys := Ym - Yws
-  PixelGetColor,cursorColor,Xr,Yr,RGB
-  splitRGBColor(cursorColor,cRed,cGreen,cBlue)
-  GuiControl,kiclacsonGui:, mouseFeed, Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%`nRBG: %cRed%, %cGreen%, %cBlue%
-  ;Mouse: %Xm%/%Ym%`n
+  ;PixelGetColor,cursorColor,Xr,Yr,RGB
+  cursorColor := Gdip_GetPixel(kicap, Xm, Ym)
+  splitARGBColor(cursorColor,cRed,cGreen,cBlue)
+  if(Xw)
+  {
+    cursorString := "Relative: " . Xr . "," . Yr . "`n"
+  }
+  Else
+  {
+    cursorString := "Relative:`n"
+  }
+  cursorString2 := "Screen:   " . Xm . "," . Ym . "`n" . "RBG:      " . cRed . "," . cGreen . "," . cBlue
+  mouseFeedString := cursorString . cursorString2
+  GuiControl,kiclacsonGui:, mouseFeed, % mouseFeedString
 }
 
 
@@ -35,7 +45,7 @@ cursorGetLocation()
 {
   if(config.debugMode)
   {
-    clipboard = Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%`nRBG: %cRed%, %cGreen%, %cBlue%
+    clipboard = %mouseFeedString%
     ;GuiControl,kiclacsonGui:, mouseFeed, Relative: %Xr%`,%Yr%`nScreen: %Xm%`,%Ym%`nRBG: %cRed%, %cGreen%, %cBlue%
     return
   }

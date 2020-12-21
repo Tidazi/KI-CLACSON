@@ -1,3 +1,23 @@
+12/20/2020
+  v0.0015
+    added support for fulgore pips functionality in 1920x1080fs
+    added back the missing sound file for the P2 fulgore 4pip/8pip audio cue
+    fixed a bug that would break fulgore pips stuff if you switched resolutions
+    
+
+  v0.0014
+
+    Major change, we're now using GDIPlus for detection.
+    This will use slightly more CPU than before, but it will scale MUCH better.
+    More functionality can be added as needed with minimal performance impact.
+    Additionally, GDIPlus is more responsive and consistent than the old method.
+
+    Basic functionality for Fulgore pip alerts is ready for 1600x900w.
+    Alerts exist for: No pips available, 4 pips available, 8 pips available.
+    Functional for both P1 and P2 side.
+    Support for 1920x1080fs is forthcoming.
+
+
 12/19/2020
   v0.0013
     added un4seen bass as the new audio playback library

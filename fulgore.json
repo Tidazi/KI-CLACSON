@@ -1,16 +1,29 @@
 {
     "1600x900w": {
-      "fulgoreY" : 876,
+      "anchorY"  : 876,
+      "pipsY"    : 868,
       "P1anchorX": 140,
+      "P1pips1X" : 394,
       "P1pips4X" : 316,
       "P1pips8X" : 213,
-      "P2pips4X" : 000,
-      "P2pips8X" : 000
+      "P2anchorX": 1486,
+      "P2pips1X" : 1230,
+      "P2pips4X" : 1311,
+      "P2pips8X" : 1415
     },
     "1920x1080w": {
 
     },
     "1920x1080fs": {
-
+      "anchorY"  : 1003,
+      "pipsY"    : 1003,
+      "P1anchorX": 158,
+      "P1pips1X" : 460,
+      "P1pips4X" : 362,
+      "P1pips8X" : 237,
+      "P2anchorX": 1774,
+      "P2pips1X" : 1473,
+      "P2pips4X" : 1566,
+      "P2pips8X" : 1690
     }
 }

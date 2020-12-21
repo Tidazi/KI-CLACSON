@@ -3,26 +3,31 @@
   Main KI CLACSON combo level detection function
 */
 
+global clFalsePositivelv2, clFalsePositivelv3, clFalsePositivelv4
 comboLevelMain()
 {
   if WinActive("Killer Instinct")
   {
+    ;comboLevelGdip := Gdip_Startup()
+    ;kicap := Gdip_BitmapFromHWND(kiwindow)
     ; determine ui side with hit counter lettering
     ; branch into appropriate level detection coordinates
+    ;StartTime := A_TickCount
 
     ; player 1 side check white lettering of hit counter
-    PixelGetColor,p1hits,pos.P1HitsX,pos.HitsY,RGB
-    splitRGBColor(p1hits,p1Red,p1Green,p1Blue)
+    p1hits := Gdip_GetPixel(kicap, pos.P1HitsX, pos.HitsY)
+    splitARGBColor(p1hits,p1Red,p1Green,p1Blue)
 
     ; player 2 side check white lettering of hit counter
-    PixelGetColor,p2hits,pos.P2HitsX,pos.HitsY,RGB
-    splitRGBColor(p2hits,p2Red,p2Green,p2Blue)
+    p2hits := Gdip_GetPixel(kicap, pos.P2HitsX, pos.HitsY)
+    splitARGBColor(p2hits,p2Red,p2Green,p2Blue)
 
     ; check if active combo is on p1 side
     if(hitCounterCheck(p1Red,p1Green,p1Blue))
     {
-      PixelGetColor,p1level1,pos.P1Level1,pos.LevelY,RGB
-      splitRGBColor(p1level1,Red,Green,Blue)
+      p1level1 := Gdip_GetPixel(kicap, pos.P1Level1, pos.LevelY)
+      splitARGBColor(p1level1,Red,Green,Blue)
+
       if(levelCheck(Red,Green,Blue))
       {
         combo.Active := "P1"
@@ -40,8 +45,8 @@ comboLevelMain()
     ; check if active combo is on p2 side
     else if(hitCounterCheck(p2Red,p2Green,p2Blue))
     {
-      PixelGetColor,p2level1,pos.P2Level1,pos.LevelY,RGB
-      splitRGBColor(p2level1,Red,Green,Blue)
+      p2level1 := Gdip_GetPixel(kicap, pos.P2Level1, pos.LevelY)
+      splitARGBColor(p2level1,Red,Green,Blue)
       if(levelCheck(Red,Green,Blue))
       {
         combo.Active := "P2"
@@ -72,8 +77,8 @@ comboLevelMain()
       {
 
         ; check level 2
-        PixelGetColor,p1level2,pos.P1Level2,pos.LevelY,RGB
-        splitRGBColor(p1level2,Red,Green,Blue)
+        p1level2 := Gdip_GetPixel(kicap, pos.P1Level2, pos.LevelY)
+        splitARGBColor(p1level2,Red,Green,Blue)
 
         if(config.debugMode)
         {
@@ -87,12 +92,20 @@ comboLevelMain()
         }
         else
         {
-          aReady.level2 := 1
+          if(clFalsePositivelv2==1)
+          {
+            aReady.level2 := 1
+            clFalsePositivelv2:=0
+          }
+          else
+          {
+            clFalsePositivelv2:=1
+          }
         }
 
         ; check level 3
-        PixelGetColor,p1level3,pos.P1Level3,pos.LevelY,RGB
-        splitRGBColor(p1level3,Red,Green,Blue)
+        p1level3 := Gdip_GetPixel(kicap, pos.P1Level3, pos.LevelY)
+        splitARGBColor(p1level3,Red,Green,Blue)
 
         if(config.debugMode)
         {
@@ -106,12 +119,20 @@ comboLevelMain()
         }
         else
         {
-          aReady.level3 := 1
+          if(clFalsePositivelv3==1)
+          {
+            aReady.level3 := 1
+            clFalsePositivelv3:=0
+          }
+          else
+          {
+            clFalsePositivelv3:=1
+          }
         }
 
         ; check level 4
-        PixelGetColor,p1level4,pos.P1Level4,pos.LevelY,RGB
-        splitRGBColor(p1level4,Red,Green,Blue)
+        p1level4 := Gdip_GetPixel(kicap, pos.P1Level4, pos.LevelY)
+        splitARGBColor(p1level4,Red,Green,Blue)
 
         if(config.debugMode)
         {
@@ -125,7 +146,15 @@ comboLevelMain()
         }
         else
         {
-          aReady.level4 := 1
+          if(clFalsePositivelv4==1)
+          {
+            aReady.level4 := 1
+            clFalsePositivelv4:=0
+          }
+          else
+          {
+            clFalsePositivelv4:=1
+          }
         }
         DebugRBGValString = %p1hitsrgbdebug%%p1level2rgbdebug%%p1level3rgbdebug%%p1level4rgbdebug%
 
@@ -134,8 +163,9 @@ comboLevelMain()
       if(combo.Active == "P2")
       {
         ; check level 2
-        PixelGetColor,p2level2,pos.P2Level2,pos.LevelY,RGB
-        splitRGBColor(p2level2,Red,Green,Blue)
+        ;PixelGetColor,p2level2,pos.P2Level2,pos.LevelY,RGB
+        p2level2 := Gdip_GetPixel(kicap, pos.P2Level2, pos.LevelY)
+        splitARGBColor(p2level2,Red,Green,Blue)
 
         if(config.debugMode)
         {
@@ -149,12 +179,20 @@ comboLevelMain()
         }
         else
         {
-          aReady.level2 := 1
+          if(clFalsePositivelv2==1)
+          {
+            aReady.level2 := 1
+            clFalsePositivelv2:=0
+          }
+          else
+          {
+            clFalsePositivelv2:=1
+          }
         }
 
         ; check level 3
-        PixelGetColor,p2level3,pos.P2Level3,pos.LevelY,RGB
-        splitRGBColor(p2level3,Red,Green,Blue)
+        p2level3 := Gdip_GetPixel(kicap, pos.P2Level3, pos.LevelY)
+        splitARGBColor(p2level3,Red,Green,Blue)
 
         if(config.debugMode)
         {
@@ -168,13 +206,21 @@ comboLevelMain()
         }
         else
         {
-          aReady.level3 := 1
+          if(clFalsePositivelv3==1)
+          {
+            aReady.level3 := 1
+            clFalsePositivelv3:=0
+          }
+          else
+          {
+            clFalsePositivelv3:=1
+          }
         }
 
 
         ; check level 4
-        PixelGetColor,p2level4,pos.P2Level4,pos.LevelY,RGB
-        splitRGBColor(p2level4,Red,Green,Blue)
+        p2level4 := Gdip_GetPixel(kicap, pos.P2Level4, pos.LevelY)
+        splitARGBColor(p2level4,Red,Green,Blue)
 
         if(config.debugMode)
         {
@@ -188,7 +234,15 @@ comboLevelMain()
         }
         else
         {
-          aReady.level4 := 1
+          if(clFalsePositivelv4==1)
+          {
+            aReady.level4 := 1
+            clFalsePositivelv4:=0
+          }
+          else
+          {
+            clFalsePositivelv4:=1
+          }
         }
 
         DebugRBGValString = %p2hitsrgbdebug%%p2level2rgbdebug%%p2level3rgbdebug%%p2level4rgbdebug%
@@ -202,16 +256,19 @@ comboLevelMain()
           if(aReady.level2 == 1 and combo.CurrentLevel == 2)
           {
             aReady.level2 := 0
+            clFalsePositivelv2:=0
             BASS_ChannelPlay(snd_comboLevel_p1_level2,1)
           }
           if(aReady.level3 == 1 and combo.CurrentLevel == 3)
           {
             aReady.level3 := 0
+            clFalsePositivelv3:=0
             BASS_ChannelPlay(snd_comboLevel_p1_level3,1)
           }
           if(aReady.level4 == 1 and combo.CurrentLevel == 4)
           {
             aReady.level4 := 0
+            clFalsePositivelv4:=0
             BASS_ChannelPlay(snd_comboLevel_p1_level4,1)
           }
         }
@@ -220,16 +277,19 @@ comboLevelMain()
           if(aReady.level2 == 1 and combo.CurrentLevel == 2)
           {
             aReady.level2 := 0
+            clFalsePositivelv2:=0
             BASS_ChannelPlay(snd_comboLevel_p2_level2,1)
           }
           if(aReady.level3 == 1 and combo.CurrentLevel == 3)
           {
             aReady.level3 := 0
+            clFalsePositivelv3:=0
             BASS_ChannelPlay(snd_comboLevel_p2_level3,1)
           }
           if(aReady.level4 == 1 and combo.CurrentLevel == 4)
           {
             aReady.level4 := 0
+            clFalsePositivelv4:=0
             BASS_ChannelPlay(snd_comboLevel_p2_level4,1)
           }
         }
@@ -240,6 +300,7 @@ comboLevelMain()
       GuiControl,kiclacsonGui:, StateBox, %stateMessage%
       GuiControl,kiclacsonGui:, comboLevelFeed, %DebugRBGValString%
       GuiControl,kiclacsonGui:, colorRangeFeed, % "Red High:   " . redHigh . "`nRed Low:    " . redLow . "`nGreen High: " . greenHigh . "`nGreen Low:  " . greenLow . "`nBlue High:  " . blueHigh . "`nBlue Low:   " . blueLow
+
     }
     else
     {
@@ -251,10 +312,15 @@ comboLevelMain()
       GuiControl,kiclacsonGui:, StateBox, Waiting...
       GuiControl,kiclacsonGui:, comboLevelFeed, %DebugRBGValString%
     }
-
-    }
-    else
-    {
-      GuiControl,kiclacsonGui:, StateBox, Paused...
-    }
+    return
+  ;Gdip_DisposeImage(kicap)
+  ;Gdip_Shutdown(comboLevelGdip)
+  }
+  else
+  {
+    GuiControl,kiclacsonGui:, StateBox, Paused...
+    return
+  }
+    ;ElapsedTime := A_TickCount - StartTime
+    ;GuiControl,kiclacsonGui:, fulgoreFeed, % ElapsedTime . "ms has elapsed."
 }
