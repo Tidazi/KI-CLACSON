@@ -1,8 +1,17 @@
 /*
-  kiclacson.ahk
+  ki_clacson.ahk
   an accessibility utility by tidazi (2020)
-  version: 0.0014 pre-alpha
+  version: 0.0.0.16 pre-alpha
 */
+
+;@Ahk2Exe-SetName KI CLACSON
+;@Ahk2Exe-SetLanguage 0x0409
+;@Ahk2Exe-SetDescription Audio cue accessibility for Killer Instinct (2013)
+;@Ahk2Exe-SetVersion 0.0.0.16-pre-alpha
+;@Ahk2Exe-SetOrigFilename ki_clacson.exe
+;@Ahk2Exe-SetCompanyName Tidazico (A fake company)
+;@Ahk2Exe-SetCopyright GNU Affero General Public License v3.0
+
 
 ; Let it run till death but only once.
 #Persistent
@@ -69,7 +78,10 @@ global combo := new ComboState(0,0,0)
 global aReady := new AudioReady(1,1,1)
 
 
-
+if(config.KiVersion == "Steam")
+{
+  fixSteamKI()
+}
 
 BASS_Load()
 
@@ -127,8 +139,11 @@ kiClacsonLoopStart:
   WinGetTitle, ActiveWindowTitle, A
   if(ActiveWindowTitle == "Killer Instinct")
   {
-    WinGet, kiwindow, id
     clacsonMainGdip := Gdip_Startup()
+    WinGet, kiwindow, id
+    ; todo: add support for non-borderless fullscreen here
+    ;WinGet, KIPID, PID, Killer Instinct
+    ;kipath := GetModuleFileNameEx(KIPID)
     kicap := Gdip_BitmapFromHWND(kiwindow)
     goto kiClacsonComboLevelStart
   }
@@ -142,6 +157,10 @@ return
 
 kiClacsonComboLevelStart:
   comboLevelMain()
+  ;p1level2temp := Gdip_GetPixel(kicap, pos.P1Level2, pos.LevelY)
+  ;splitARGBColor(p1level2temp,Red,Green,Blue)
+  ;DebugRBGValString := "Level2 Box: " . Red . "," . Green . "," . Blue
+  ;GuiControl,kiclacsonGui:, comboLevelFeed, %DebugRBGValString%
   goto kiClacsonFulgorePipsStart
 return
 

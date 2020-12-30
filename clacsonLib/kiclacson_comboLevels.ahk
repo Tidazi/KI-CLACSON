@@ -1,5 +1,98 @@
 
 /*
+  Function definitions
+
+    hitCounterCheck
+      checks if the given color is white enough
+      uses the hit counter lettering
+
+    levelCheck
+      checks if the provided color (should be combo level box)
+      is the right shade of green / green enough
+
+    colorRange
+      function for narrowing down the color range of the combo
+      level boxes to eliminate false positives
+
+*/
+
+hitCounterCheck(Red,Green,Blue)
+{
+  if( Red >= 250 and Green >= 250 and Blue >= 250 )
+  {
+    return 1
+  }
+  else
+  {
+    return 0
+  }
+}
+
+
+levelCheck(Red,Green,Blue)
+{
+/*
+if( Red >= 225 and Red <= 240 and Green >= 240
+    and Blue <= 195 and Blue >= 125 )
+
+if( Red >= 234 and Red <= 240 and Green >= 250
+    and Blue <= 190 and Blue >= 182 )
+*/
+  if( Red <= 240 and Red >= 225 and Green >= 240
+      and Blue <= 190 and Blue >= 154 )
+  {
+    return 1
+  }
+  else
+  {
+    return 0
+  }
+}
+
+global redHigh, redLow, greenHigh, greenLow, blueHigh, blueLow
+colorRange(red,green,blue)
+{
+  if(!redLow)
+  {
+    redLow := 255
+  }
+  if(!greenLow)
+  {
+    greenLow := 255
+  }
+  if(!blueLow)
+  {
+    blueLow := 255
+  }
+  if(red > redHigh)
+  {
+    redHigh := red
+  }
+  if(red < redLow)
+  {
+    redLow := red
+  }
+  if(green > greenHigh)
+  {
+    greenHigh := green
+  }
+  if(green < greenLow)
+  {
+    greenLow := green
+  }
+  if(blue > blueHigh)
+  {
+    blueHigh := blue
+  }
+  if(blue < blueLow)
+  {
+    blueLow := blue
+  }
+}
+
+
+
+/*
   Main KI CLACSON combo level detection function
 */
 

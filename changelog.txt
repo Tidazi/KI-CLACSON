@@ -1,9 +1,22 @@
+12/30/2020
+  v0.0016
+    new
+      added a new option to hotswap the version of ki you're playing on
+      added support for steam windowed resolutions again
+      added a function that may aid in adding non-borderless fullscreen support
+
+    changes
+      clarified that ki needs to run in borderless fullscreen (steam version)
+
+    code cleanup
+      moved all combo level related functions to the appropriate file
+
 12/20/2020
   v0.0015
     added support for fulgore pips functionality in 1920x1080fs
     added back the missing sound file for the P2 fulgore 4pip/8pip audio cue
     fixed a bug that would break fulgore pips stuff if you switched resolutions
-    
+
 
   v0.0014
 

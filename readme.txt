@@ -4,7 +4,7 @@ made by tidazi (2020)
 currently supported resolutions are as follows:
 1600x900 windowed
 1920x1080 windowed
-1920x1080 fullscreen
+1920x1080 borderless fullscreen
 
 the amount of delay is related to performance, the longer the delay,
 the better the performance will be, at the expense of being

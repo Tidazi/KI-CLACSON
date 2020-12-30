@@ -2,24 +2,15 @@
 /*
   Function definitions
 
-    splitRGBColor
-      change from hex to rgb 255 format for color ranges
-      written by animeaime of the ahk message boards
+    GetModuleFileNameEx()
+      potential solution for adding support to non-borderless fullscreen steam
+      by shimanov -  www.autohotkey.com/forum/viewtopic.php?t=9000
 
-    hitCounterCheck
-      checks if the given color is white enough
-      uses the hit counter lettering
-
-    levelCheck
-      checks if the provided color (should be combo level box)
-      is the right shade of green / green enough
+    splitARGBColor
+      change from hex to argb 255 format for color ranges
 
     kiclacsonGui
       main gui function
-
-    colorRange
-      function for narrowing down the color range of the combo
-      level boxes to eliminate false positives
 
     checkForWindow
       function to see if the ki clacson gui still exists
@@ -39,7 +30,19 @@
 
 */
 
-
+GetModuleFileNameEx(p_pid)
+{
+   h_process := DllCall( "OpenProcess", "uint", 0x10|0x400, "int", false, "uint", p_pid )
+   if ( ErrorLevel or h_process = 0 )
+   {
+     return
+   }
+   name_size = 255
+   VarSetCapacity( name, name_size )
+   result := DllCall( "psapi.dll\GetModuleFileNameExA", "uint", h_process, "uint", 0, "str", name, "uint", name_size )
+   DllCall( "CloseHandle", h_process )
+   return, name
+}
 
 splitARGBColor(RGBColor, ByRef Red, ByRef Green, ByRef Blue, ByRef Alpha=0)
 {
@@ -64,82 +67,9 @@ isWindowFullScreen( winID )
 	Return ((style & 0x20800000) or winH < A_ScreenHeight or winW < A_ScreenWidth) ? false : true
 }
 
-hitCounterCheck(Red,Green,Blue)
-{
-  if( Red >= 250 and Green >= 250 and Blue >= 250 )
-  {
-    return 1
-  }
-  else
-  {
-    return 0
-  }
-}
 
-
-levelCheck(Red,Green,Blue)
-{
-/*
-if( Red >= 225 and Red <= 240 and Green >= 240
-    and Blue <= 195 and Blue >= 125 )
-
-if( Red >= 234 and Red <= 240 and Green >= 250
-    and Blue <= 190 and Blue >= 182 )
-*/
-  if( Red <= 240 and Red >= 225 and Green >= 240
-      and Blue <= 190 and Blue >= 154 )
-  {
-    return 1
-  }
-  else
-  {
-    return 0
-  }
-}
-
-global redHigh, redLow, greenHigh, greenLow, blueHigh, blueLow
-colorRange(red,green,blue)
-{
-  if(!redLow)
-  {
-    redLow := 255
-  }
-  if(!greenLow)
-  {
-    greenLow := 255
-  }
-  if(!blueLow)
-  {
-    blueLow := 255
-  }
-  if(red > redHigh)
-  {
-    redHigh := red
-  }
-  if(red < redLow)
-  {
-    redLow := red
-  }
-  if(green > greenHigh)
-  {
-    greenHigh := green
-  }
-  if(green < greenLow)
-  {
-    greenLow := green
-  }
-  if(blue > blueHigh)
-  {
-    blueHigh := blue
-  }
-  if(blue < blueLow)
-  {
-    blueLow := blue
-  }
-}
-
-
-global VolumeSlider, volumeInput, volumeUpdown, boxConfig, stateBox
+global VolumeSlider, volumeInput, volumeUpdown,
+global KiVersionWin10, KiVersionSteam, boxConfig, stateBox
 global comboLevelFeed, colorRangeFeed, resolutionBox, mouseFeed, configDisplay
 global currentResolution, checkInterval, fulgoreFeed
 kiclacsonGui()
@@ -188,7 +118,7 @@ kiclacsonGui()
   Sort,resolutionListFS, D| N
   resolutionListW := StrReplace(resolutionListW,"A|","||")
   resolutionListFS := StrReplace(resolutionListFS,"A|","||")
-  resolutionList := "WINDOWED RESOLUTIONS|" resolutionListW . "FULLSCREEN RESOLUTIONS|" . resolutionListFS
+  resolutionList := "WINDOWED|" resolutionListW . "BORDERLESS FULLSCREEN|" . resolutionListFS
 
   ;msgbox, % resolutionList
   Gui, kiclacsonGui:New,, K I  CLACSON
@@ -204,6 +134,25 @@ kiclacsonGui()
   Gui, kiclacsonGui:Add, UpDown, guserChangeVolume vvolumeUpdown Range0-100, 0
   Gui, kiclacsonGui:Add, Text,, K I  Resolution
   Gui, kiclacsonGui:Add, DropDownList, guserChangeResolution vcurrentResolution w230, % resolutionList
+  Gui, kiclacsonGui:Add, Text,, K I  Version
+  if(config.KiVersion == "Win10")
+  {
+    Gui, kiclacsonGui:Add, Radio, altsubmit guserChangeKiVersion vKiVersionWin10 checked, Windows 10
+  }
+  else
+  {
+    Gui, kiclacsonGui:Add, Radio, altsubmit guserChangeKiVersion vKiVersionWin10, Windows 10
+  }
+  if(config.KiVersion == "Steam")
+  {
+    Gui, kiclacsonGui:Add, Radio, altsubmit guserChangeKiVersion vKiVersionSteam checked, Steam
+  }
+  else
+  {
+    Gui, kiclacsonGui:Add, Radio, altsubmit guserChangeKiVersion vKiVersionSteam, Steam
+  }
+
+
   Gui, kiclacsonGui:Add, Text,, Check Interval
   Gui, kiclacsonGui:Add, Edit, r1 vcheckInterval w230 disabled, % config.frameDelay . "f"
   Gui, kiclacsonGui:Add, Text,, Current State
@@ -236,21 +185,41 @@ kiclacsonGui()
   return
 }
 
+userChangeKiVersion()
+{
+  GuiControlGet, KiVersionWin10
+  GuiControlGet, KiVersionSteam
+  if(KiVersionWin10)
+  {
+    config.KiVersion := "Win10"
+  }
+  else
+  {
+    config.KiVersion := "Steam"
+    fixSteamKI()
+  }
+  ;msgbox, % config.KiVersion
+  updateUserSettings()
+  userChangeResolution()
+}
 
 userChangeResolution()
 {
   GuiControlGet, currentResolution
 
-  if(currentResolution == "WINDOWED RESOLUTIONS" or currentResolution == "FULLSCREEN RESOLUTIONS")
+  if(currentResolution == "WINDOWED" or currentResolution == "BORDERLESS FULLSCREEN")
   {
     GuiControl, ChooseString, currentResolution, % config.resolution
   }
   else
   {
-    ;msgbox, % currentResolution
     config.resolution := currentResolution
     pos := resolutions[config.resolution]
     fpips := fulgorePips[config.resolution]
+    if(config.KiVersion == "Steam")
+    {
+      fixSteamKI()
+    }
     updateUserSettings()
   }
 }
@@ -312,7 +281,7 @@ fixSteamKI()
         pos.HitsY := round(pos.HitsY - (diff / 2))
         pos.LevelY := round(pos.LevelY - (diff / 2))
         newResString := confWidth . "x" . round(confHeight - diff) . "w"
-        config.resolution := newResString
+        ;config.resolution := newResString
 
         ;WinMove,Killer Instinct,,,,(confWidth+16),(confHeight+41)
         ;msgbox, % confWidth  . "x" . confHeight . "`n" . ResolutionText
